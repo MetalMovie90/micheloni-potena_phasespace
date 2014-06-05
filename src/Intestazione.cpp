@@ -1,3 +1,14 @@
+// Autori del codice
+/*
+
+   Ciro Potena, Alessio Micheloni
+
+*/
+//
+
+
+
+
 #include <iostream>
 #include "Intestazione.h"
 #include "owl.h"
