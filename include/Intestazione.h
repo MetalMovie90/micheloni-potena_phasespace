@@ -1,3 +1,12 @@
+// Autori del codice
+/*
+
+   Ciro Potena, Alessio Micheloni
+
+*/
+//
+
+
 #include <iostream>
 #include <time.h>
 #include <vector>
