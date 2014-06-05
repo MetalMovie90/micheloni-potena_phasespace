@@ -19,3 +19,8 @@
 *.exe
 *.out
 *.app
+
+# Typical building folders
+build
+BUILD
+Build
