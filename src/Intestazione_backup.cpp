@@ -14,7 +14,9 @@
 int main()
 {
     
-	int rip = 10;
+	int MARKER_COUNT = 72;
+	int INIT_FLAGS = 0; 
+	int n = 10;
 	char soggetto[20];
 	char task[20];
 	char oggetto[20];
@@ -36,14 +38,45 @@ int main()
 	std::cin >> time_start;
 	std::cin >> time_stop;
 
-    
+    int tracker;
+
+    if(owlInit("192.168.1.230", INIT_FLAGS) < 0)
+    {
+        std::cout << "Errore con il server" << std::endl;
+        return 0;
+    }
+
+    // create tracker 0
+	tracker = 0;
+	owlTrackeri(tracker, OWL_CREATE, OWL_POINT_TRACKER);
+
+	// set markers
+	for(int i = 0; i < MARKER_COUNT; i++)
+		owlMarkeri(MARKER(tracker, i), OWL_SET_LED, i);
+
+	// activate tracker
+	owlTracker(tracker, OWL_ENABLE);
+
+	// flush requests and check for errors
+	if(!owlGetStatus())
+	{
+		std:std::cout << "Flush Error" << std::endl;
+		return 0;
+	}
+
+    	// set default frequency
+	owlSetFloat(OWL_FREQUENCY, OWL_MAX_FREQUENCY);
+
+	// start streaming
+	owlSetInteger(OWL_STREAMING, OWL_ENABLE);
+
 	for(unsigned int k=0; k<sample.size(); k++)
 	{
 		objects.push_back(str[k]);
 	}
 
 
-	int* p = new int(0);
+	int* p =new int(0);
 	for(unsigned int k=0; k<sample.size(); k++)
 	{
 	
@@ -61,13 +94,7 @@ int main()
 
 	  
 	   sample.at(*p) = 1;
-	   while ( Marker->GetData(objects.at(*p),k,rip)!=1 )
-	   {
-	   		delete Marker;
-	   		PhaseSpace* Marker;
-	   		Marker = new PhaseSpace();
-	        Marker->GetInfo(soggetto, task, time_start, time_stop);
-	   }
+	   Marker->GetData(objects.at(*p),k,n);
 
 
 	   delete Marker;

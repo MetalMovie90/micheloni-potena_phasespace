@@ -19,8 +19,6 @@
 #include "owl.h"
 
 
-
-
 class PhaseSpace{
 
 public:
@@ -34,9 +32,6 @@ char extension[5];
 FILE* Marker;
 int repeat;
 OWLMarker *markers;
-int MARKER_COUNT;
-int INIT_FLAGS;
-int No_error;
 
 
 PhaseSpace(){
@@ -51,9 +46,6 @@ PhaseSpace(){
     strcpy(extension, ".dat");
 	repeat = 1;
     markers = new OWLMarker[72];
-    INIT_FLAGS = 1;
-    MARKER_COUNT = 72;
-    No_error = 0;
 };
 
 ~PhaseSpace(){
@@ -77,7 +69,7 @@ strcat(filename,"_");
 
 };
 
-int GetData(char* oggetto, int p, int n){
+void GetData(char* oggetto, int p, int n){
 
 	strcat(filename, oggetto);
 	
@@ -102,46 +94,16 @@ int GetData(char* oggetto, int p, int n){
 		std::cin.get();
 		std::cin.get();
 
-    	int tracker;
-
-    	if(owlInit("192.168.1.230", INIT_FLAGS) < 0)
-    	{
-        	std::cout << "Errore con il server" << std::endl;
-        	return 0;
-    	}
-
-    	// create tracker 0
-		tracker = 0;
-		owlTrackeri(tracker, OWL_CREATE, OWL_POINT_TRACKER);
-
-		// set markers
-		for(int i = 0; i < MARKER_COUNT; i++)
-			owlMarkeri(MARKER(tracker, i), OWL_SET_LED, i);
-
-		// activate tracker
-		owlTracker(tracker, OWL_ENABLE);
-
-		// flush requests and check for errors
-		if(!owlGetStatus())
-		{
-			std:std::cout << "Flush Error" << std::endl;
-			return 0;
-		}
-
-    	// set default frequency
-		owlSetFloat(OWL_FREQUENCY, OWL_MAX_FREQUENCY);
-
-		// start streaming
-		owlSetInteger(OWL_STREAMING, OWL_ENABLE);
-
-
         int n;
         int num = 0;
         int err;
 
 		const float begin_time = clock();
 		while(float( clock() - begin_time )/CLOCKS_PER_SEC<T_start )
-		{	
+		{
+	
+		//fprintf(Marker," Sono prima dell'inizio della prova %f \n", float( clock() - begin_time )/CLOCKS_PER_SEC);
+	
 		}
 		std::cout << "\a" << std::endl;
 
@@ -150,15 +112,17 @@ int GetData(char* oggetto, int p, int n){
 		{
 	
             n = owlGetMarkers(markers, 72);
+            std::cout << n << std::endl;
             if((err = owlGetError()) != OWL_NO_ERROR)
     		{
 				std::cout << "Errore Owl"<<std::endl;
-				return 0;
+				return;
 			}
 
             if(n>0)
             {
-        	num=0;
+        num=0;
+		//fprintf(Marker," Sono nella prova %f \n", float( clock() - begin_time )/CLOCKS_PER_SEC);
 				for(int i = 0; i < n; i++)
 				{
 					if(markers[i].cond > 0)
@@ -173,14 +137,12 @@ int GetData(char* oggetto, int p, int n){
 	    	}
 
     	}
-	    std::cout << "\a" << std::endl;
-	    fclose(Marker);
-	    delete filename_end;
-        No_error=1;
-	    std::cout << "Vuoi ripetere la prova? (1 si, 0 no) " << std::endl;
-	    std::cin >> repeat;
+	   std::cout << "\a" << std::endl;
+	   fclose(Marker);
+	   delete filename_end;
 
-	    return 1;
+	   std::cout << "Vuoi ripetere la prova? (1 si, 0 no) " << std::endl;
+	   std::cin >> repeat;
 	}
 };
 
