@@ -47,7 +47,7 @@ int main()
 	for(unsigned int k=0; k<sample.size(); k++)
 	{
 	
-		PhaseSpace* Marker;
+	    PhaseSpace* Marker;
 	    Marker = new PhaseSpace();
 	    Marker->GetInfo(soggetto, task, time_start, time_stop);
 
