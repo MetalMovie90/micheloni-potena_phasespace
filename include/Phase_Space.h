@@ -1,7 +1,7 @@
 // Autori del codice
 /*
 
-   Ciro Potena, Alessio Micheloni
+   Ciro Potena, Hamal Marino, Carlos Rosales, Alessio Micheloni
 
 */
 //
