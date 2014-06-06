@@ -17,6 +17,7 @@
 #include <sys/ioctl.h>
 #include <fcntl.h> 
 #include "owl.h"
+#include <boost/date_time/posix_time/posix_time.hpp>   
 
 
 class PhaseSpace{
@@ -72,12 +73,13 @@ strcat(filename,"_");
 void GetData(char* oggetto, int p, int n){
 
 	strcat(filename, oggetto);
-	
+
 	int rip = 0;
 	char ripc[10];
 
-	while(repeat >= 1)
-	{
+	//while(repeat >= 1)
+	//{
+
 		char *filename_end = new char[40];
 		strcpy(filename_end, filename);
 		repeat = 0;
@@ -88,42 +90,36 @@ void GetData(char* oggetto, int p, int n){
 
 		Marker = fopen( filename_end ,"w");
 	
-		std::cout << "E' stato selezionato l'oggetto " << oggetto << ", numero " << p + 1 << " di " << n  << std::endl;
-		std::cout << "Premere un tast per iniziare la prova" << std::endl;
-	
-		std::cin.get();
-		std::cin.get();
 
-        int n;
+
+        int n_marker;
         int num = 0;
         int err;
 
-		const float begin_time = clock();
-		while(float( clock() - begin_time )/CLOCKS_PER_SEC<T_start )
-		{
-	
-		//fprintf(Marker," Sono prima dell'inizio della prova %f \n", float( clock() - begin_time )/CLOCKS_PER_SEC);
-	
-		}
+        sleep(T_start);
+
+		boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
+		boost::posix_time::ptime init_t = t;
+		boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(1000000/OWL_MAX_FREQUENCY);
 		std::cout << "\a" << std::endl;
 
 
-		while(float( clock() - begin_time )/CLOCKS_PER_SEC<T_stop )
+		while(t < init_t + boost::posix_time::seconds(T_stop-T_start) )
 		{
-	
-            n = owlGetMarkers(markers, 72);
-            std::cout << n << std::endl;
+            t+=inc;
+		    //std::cout << float( clock() - begin_time )/CLOCKS_PER_SEC << " begin_time: " << begin_time << " T_stop: " << T_stop << " clock: " << clock() << std::endl;
+            n_marker = owlGetMarkers(markers, 72);
             if((err = owlGetError()) != OWL_NO_ERROR)
     		{
 				std::cout << "Errore Owl"<<std::endl;
 				return;
 			}
 
-            if(n>0)
+            if(n_marker>0)
             {
         num=0;
 		//fprintf(Marker," Sono nella prova %f \n", float( clock() - begin_time )/CLOCKS_PER_SEC);
-				for(int i = 0; i < n; i++)
+				for(int i = 0; i < n_marker; i++)
 				{
 					if(markers[i].cond > 0)
             		{
@@ -133,17 +129,22 @@ void GetData(char* oggetto, int p, int n){
 					}
 
 				}
-        		fprintf(Marker, "%f %d 0 0 0\n\n", float( clock() - begin_time )/CLOCKS_PER_SEC, num);
+				td = t-init_t;
+        		fprintf(Marker, "%f %d 0 0 0\n\n", (double)td.seconds() + td.fractional_seconds()/1000000.0, num);
 	    	}
-
+	    	td = t - boost::posix_time::microsec_clock::universal_time();
+	    	if(!(td.fractional_seconds()<0))
+	    	{
+	    		usleep(td.fractional_seconds());
+	    	}
+	    	
     	}
 	   std::cout << "\a" << std::endl;
 	   fclose(Marker);
 	   delete filename_end;
 
-	   std::cout << "Vuoi ripetere la prova? (1 si, 0 no) " << std::endl;
-	   std::cin >> repeat;
-	}
+
+	//}
 };
 
 
