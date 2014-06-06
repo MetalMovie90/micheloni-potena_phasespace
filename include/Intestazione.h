@@ -163,7 +163,7 @@ int GetData(char* oggetto, int p, int n){
 				{
 					if(markers[i].cond > 0)
             		{
-                		fprintf(Marker, "%d %f %f %f %f \n", i, markers[i].cond, markers[i].x, markers[i].y, markers[i].z);
+                		fprintf(Marker, "%d %f %f %f %f %d\n", i, markers[i].cond, markers[i].x, markers[i].y, markers[i].z, markers[i].id);
                 		num++;
 
 					}
