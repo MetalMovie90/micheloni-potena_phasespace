@@ -90,7 +90,7 @@ int main()
 	for(unsigned int k=0; k<sample.size(); k++)
 	{
 	
-	
+	    int rip = 0;
 		PhaseSpace* Marker;
 	    Marker = new PhaseSpace();
 	    Marker->GetInfo(soggetto, task, time_start, time_stop);
@@ -107,10 +107,10 @@ int main()
 		   sample.at(*p) = 1;
 		   std::cout << "E' stato selezionato l'oggetto " << objects.at(*p) << ", numero " << k + 1 << " di " << n  << std::endl;
 		   std::cout << "Premere un tasto per iniziare la prova" << std::endl;
-	
+	       rip++;
 		   std::cin.get();
 		   init_PhaseSpace(INIT_FLAGS, MARKER_COUNT);
-		   Marker->GetData(objects.at(*p),k,n);
+		   Marker->GetData(objects.at(*p), rip);
 		   owlDone();
 		   std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
 		   std::cin >> repeat;

@@ -70,20 +70,17 @@ strcat(filename,"_");
 
 };
 
-void GetData(char* oggetto, int p, int n){
+void GetData(char* oggetto, int rip){
 
-	strcat(filename, oggetto);
-
-	int rip = 0;
+	
+	char *filename_end = new char[40];
 	char ripc[10];
 
 	//while(repeat >= 1)
 	//{
-
-		char *filename_end = new char[40];
-		strcpy(filename_end, filename);
+        strcpy(filename_end, filename);
+	    strcat(filename_end, oggetto);
 		repeat = 0;
-		rip++;
         sprintf(ripc,"%d",rip);
 		strcat(filename_end, ripc);
 		strcat(filename_end, extension);
