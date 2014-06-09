@@ -39,7 +39,7 @@ int tracker;
 		return;
 	}
 
-    	// set default frequency
+    // set default frequency
 	owlSetFloat(OWL_FREQUENCY, OWL_MAX_FREQUENCY);
 
 	// start streaming
@@ -66,7 +66,6 @@ int main()
 	char str[10][20] = {"penna","dizionario","cancellino","occhiali","telefonino"
 		               ,"asciuga capelli","bicchiere","tazza da the","asciugamano","coltello"};
 
-	//std::cout << "\a" << std::endl;
 
     std::cout << "Inserire il nome del soggetto: " << std::endl;
 	std::cin >> soggetto;
