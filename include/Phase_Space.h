@@ -99,7 +99,9 @@ void GetData(char* oggetto, int rip){
 		boost::posix_time::ptime init_t = t;
 		boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(1000000/OWL_MAX_FREQUENCY);
 		std::cout << "\a" << std::endl;
-
+		
+		// avvia streaming dati
+// 		this->start_streaming_PhaseSpace();
 
 		while(t < init_t + boost::posix_time::seconds(T_stop-T_start) )
 		{
@@ -119,12 +121,10 @@ void GetData(char* oggetto, int rip){
 				for(int i = 0; i < n_marker; i++)
 				{
 					if(markers[i].cond > 0)
-            		{
-                		fprintf(Marker, "%d %f %f %f %f \n", i, markers[i].cond, markers[i].x, markers[i].y, markers[i].z);
-                		num++;
-
+					{
+						fprintf(Marker, "%d %f %f %f %f \n",i,markers[i].cond,markers[i].x, markers[i].y, markers[i].z);
+						num++;
 					}
-
 				}
 				td = t-init_t;
         		fprintf(Marker, "%f %d 0 0 0\n\n", (double)td.seconds() + td.fractional_seconds()/1000000.0, num);
@@ -134,15 +134,72 @@ void GetData(char* oggetto, int rip){
 	    	{
 	    		usleep(td.fractional_seconds());
 	    	}
-	    	
-    	}
-	   std::cout << "\a" << std::endl;
-	   fclose(Marker);
-	   delete filename_end;
+		}
+		
+		// interrompi streaming dati
+// 		this->stop_streaming_PhaseSpace();
+		
+		std::cout << "\a" << std::endl;
+		fclose(Marker);
+		delete filename_end;
 
 
 	//}
 };
+
+void init_PhaseSpace(int INIT_FLAGS, int MARKER_COUNT,std::string IP_string){
+
+	int tracker;
+
+	if(owlInit(IP_string.c_str(), INIT_FLAGS) < 0)
+	{
+		std::cout << "Errore con il server" << std::endl;
+		return;
+	}
+
+	// create tracker 0
+	tracker = 0;
+	owlTrackeri(tracker, OWL_CREATE, OWL_POINT_TRACKER);
+
+	// set markers
+	for(int i = 0; i < MARKER_COUNT; i++)
+		owlMarkeri(MARKER(tracker, i), OWL_SET_LED, i);
+
+	// activate tracker
+	owlTracker(tracker, OWL_ENABLE);
+
+	// flush requests and check for errors
+	if(!owlGetStatus())
+	{
+		std:std::cout << "Flush Error" << std::endl;
+		return;
+	}
+
+    // set default frequency
+	owlSetFloat(OWL_FREQUENCY, OWL_MAX_FREQUENCY);
+
+	this->start_streaming_PhaseSpace();
+};
+
+// start data streaming
+void start_streaming_PhaseSpace()
+{
+	// start streaming
+	owlSetInteger(OWL_STREAMING, OWL_ENABLE);
+};
+
+// stop data streaming
+void stop_streaming_PhaseSpace()
+{
+	// start streaming
+	owlSetInteger(OWL_STREAMING, OWL_DISABLE);
+};
+
+// stop phaseSpace acquisition
+void stop_PhaseSpace()
+{
+	owlDone();
+}
 
 
 }; // class end

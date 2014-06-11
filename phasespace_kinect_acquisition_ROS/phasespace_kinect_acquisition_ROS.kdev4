@@ -1,0 +1,3 @@
+[Project]
+Manager=KDevCMakeManager
+Name=phasespace_kinect_acquisition_ROS

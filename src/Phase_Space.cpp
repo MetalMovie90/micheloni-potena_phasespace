@@ -6,49 +6,22 @@
 */
 //
 
-
-
 #include "Phase_Space.h"
 #include "owl.h"
+#include <thread>
 
-void init_PhaseSpace(int INIT_FLAGS, int MARKER_COUNT){
-
-int tracker;
-
-    if(owlInit("192.168.1.230", INIT_FLAGS) < 0)
-    {
-        std::cout << "Errore con il server" << std::endl;
-        return;
-    }
-
-    // create tracker 0
-	tracker = 0;
-	owlTrackeri(tracker, OWL_CREATE, OWL_POINT_TRACKER);
-
-	// set markers
-	for(int i = 0; i < MARKER_COUNT; i++)
-		owlMarkeri(MARKER(tracker, i), OWL_SET_LED, i);
-
-	// activate tracker
-	owlTracker(tracker, OWL_ENABLE);
-
-	// flush requests and check for errors
-	if(!owlGetStatus())
-	{
-		std:std::cout << "Flush Error" << std::endl;
-		return;
-	}
-
-    // set default frequency
-	owlSetFloat(OWL_FREQUENCY, OWL_MAX_FREQUENCY);
-
-	// start streaming
-	owlSetInteger(OWL_STREAMING, OWL_ENABLE);
-
-
-
-};
-
+// dichiarazione thread
+//*******************************************************************************************
+// getData THREAD FUNCTION
+//*******************************************************************************************
+void PSGetData(PhaseSpace* PS,char* object, int rip)
+{
+	PS->GetData(object,rip);
+	
+	PS->stop_PhaseSpace();
+	std::cout << "[INFO] Exiting PSGetData thread..." << std::endl;
+	return;
+}
 
 
 int main()
@@ -67,10 +40,10 @@ int main()
 		               ,"asciuga capelli","bicchiere","tazza da the","asciugamano","coltello"};
 
 
-    std::cout << "Inserire il nome del soggetto: " << std::endl;
+	std::cout << "Inserire il nome del soggetto: " << std::endl;
 	std::cin >> soggetto;
 	
-    std::cout << "Inserire il nome del task da eseguire: " << std::endl;
+	std::cout << "Inserire il nome del task da eseguire: " << std::endl;
 	std::cin >> task;
 
 	std::cout << "Inserire il tempo per il bip iniziale e per quello finale " << std::endl;
@@ -85,45 +58,55 @@ int main()
 	}
 
 
-	int* p =new int(0);
+	int p = 0;
 	for(unsigned int k=0; k<sample.size(); k++)
 	{
 	
-	    int rip = 0;
+		int rip = 0;
 		PhaseSpace* Marker;
-	    Marker = new PhaseSpace();
-	    Marker->GetInfo(soggetto, task, time_start, time_stop);
+		Marker = new PhaseSpace();
+		Marker->GetInfo(soggetto, task, time_start, time_stop);
 
-	   srand (time(0));	 
-	   *p = rand() % 10 ;
+		srand (time(0));
+		p = rand() % objects.size();
 
-	   while(sample.at(*p) == 1)
-	   {
-      	   *p = (*p%9)+1;
-	   }
-       char repeat = 'y';
-	   while(repeat=='y'){
-		   sample.at(*p) = 1;
-		   std::cout << "E' stato selezionato l'oggetto " << objects.at(*p) << ", numero " << k + 1 << " di " << n  << std::endl;
-		   std::cout << "Premere un tasto per iniziare la prova" << std::endl;
-	       rip++;
-		   std::cin.get();
-		   init_PhaseSpace(INIT_FLAGS, MARKER_COUNT);
-		   Marker->GetData(objects.at(*p), rip);
-		   owlDone();
-		   std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
-		   std::cin >> repeat;
-		   std::cin.ignore(INT_MAX,'\n');
+		while(sample.at(p) == 1)
+		{
+      	   p = (p+1) % objects.size();
+		}
+	    char repeat = 'y';
+		while(repeat=='y')
+		{
+			sample.at(p) = 1;
+			std::cout << "E' stato selezionato l'oggetto " << objects.at(p) << ", numero " << k + 1 << " di " << n  << std::endl;
+			std::cout << "Premere un tasto per iniziare la prova" << std::endl;
+			rip++;
+			std::cin.get();
+			std::cout<<"prima init_PhaseSpace"<<std::endl;
+			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));
+			
+			std::cout<<"dopo init_PhaseSpace"<<std::endl;
+			
+			// inizializza thread kinect RGB
+			// inizializza thread kinect pcd
+			
+			// fai partire tutti i thread, compreso uno che fa soltanto Marker->GetData();
+			Marker->GetData(objects.at(p), rip);
+			Marker->stop_PhaseSpace();
+// 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
+			std::cout<<"dopo thread creation"<<std::endl;
+// 			thrGetData.join();
+			std::cout<<"dopo thread join"<<std::endl;
+			std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
+			std::cin >> repeat;
+			std::cin.ignore(INT_MAX,'\n');
 
-	       
-       }
+		}
 
 	   delete Marker;
 	  
 	}
-	delete p;
-    
-    
+
 	std::cout << "Prova terminata " << std::endl;
 	std::cout << "Premere un tasto per terminare" << std::endl;
 	std::cin.get();
