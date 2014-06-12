@@ -88,22 +88,47 @@ void GetData(char* oggetto, int rip){
 		Marker = fopen( filename_end ,"w");
 	
 
-   
-
 
         int n_marker;
         int num = 0;
         int err;
 
-        //sleep(T_start);
+        sleep(T_start);
 
 		boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
 		boost::posix_time::ptime init_t = t;
 		boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(1000000/OWL_MAX_FREQUENCY);
-		std::cout << "\a" << std::endl;
+
 		
+			if(owlInit(IP_string.c_str(), INIT_FLAGS) < 0)
+	{
+		std::cout << "Errore con il server" << std::endl;
+		return;
+	}
+
+	// create tracker 0
+	tracker = 0;
+	owlTrackeri(tracker, OWL_CREATE, OWL_POINT_TRACKER);
+
+	// set markers
+	for(int i = 0; i < MARKER_COUNT; i++)
+		owlMarkeri(MARKER(tracker, i), OWL_SET_LED, i);
+		
+		tracker = 0;
+		owlTracker(tracker, OWL_ENABLE);
+
+	// flush requests and check for errors
+	if(!owlGetStatus())
+	{
+		std:std::cout << "Flush Error" << std::endl;
+		return;
+	}
+
+    // set default frequency
+	owlSetFloat(OWL_FREQUENCY, OWL_MAX_FREQUENCY);
+				std::cout << "\a" << std::endl;
 		// avvia streaming dati
- 		//this->start_streaming_PhaseSpace();
+// 		this->start_streaming_PhaseSpace();
 
 		while(t < init_t + boost::posix_time::seconds(T_stop-T_start) )
 		{
@@ -167,7 +192,7 @@ void init_PhaseSpace(int INIT_FLAGS, int MARKER_COUNT,std::string IP_string){
 	for(int i = 0; i < MARKER_COUNT; i++)
 		owlMarkeri(MARKER(tracker, i), OWL_SET_LED, i);
 
-	// activate tracker
+	/*// activate tracker
 	owlTracker(tracker, OWL_ENABLE);
 
 	// flush requests and check for errors
@@ -180,7 +205,7 @@ void init_PhaseSpace(int INIT_FLAGS, int MARKER_COUNT,std::string IP_string){
     // set default frequency
 	owlSetFloat(OWL_FREQUENCY, OWL_MAX_FREQUENCY);
 
-	this->start_streaming_PhaseSpace();
+	this->start_streaming_PhaseSpace();*/
 };
 
 // start data streaming
@@ -193,9 +218,6 @@ void start_streaming_PhaseSpace()
 // stop data streaming
 void stop_streaming_PhaseSpace()
 {
- 
-    owlSetFloat(OWL_FREQUENCY, OWL_MAX_FREQUENCY);
-
 	// start streaming
 	owlSetInteger(OWL_STREAMING, OWL_DISABLE);
 };

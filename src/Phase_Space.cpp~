@@ -83,11 +83,9 @@ int main()
 			rip++;
 			std::cin.get();
 			std::cout<<"prima init_PhaseSpace"<<std::endl;
-			sleep(time_start);
-				std::cout<<"dopo init_PhaseSpace"<<std::endl;
 			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));
 			
-		
+			std::cout<<"dopo init_PhaseSpace"<<std::endl;
 			
 			// inizializza thread kinect RGB
 			// inizializza thread kinect pcd
@@ -97,7 +95,7 @@ int main()
 			Marker->stop_PhaseSpace();
 // 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
 			std::cout<<"dopo thread creation"<<std::endl;
-// 			thrGetData.join();
+			thrGetData.join();
 			std::cout<<"dopo thread join"<<std::endl;
 			std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
 			std::cin >> repeat;
