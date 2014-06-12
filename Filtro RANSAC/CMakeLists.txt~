@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 2.8)
+project( Ransac_Filter )
+
+add_executable( RANSAC  
+	src/Ransac.cpp 
+	)
+	

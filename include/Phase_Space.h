@@ -99,9 +99,12 @@ void GetData(char* oggetto, int rip){
         int num = 0;
         int err;
 
+        while(  ( n_marker = owlGetMarkers(markers, 72) == 0 )  );
+
 		boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
 		boost::posix_time::ptime init_t = t;
 		boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(1000000/OWL_MAX_FREQUENCY);
+
 		std::cout << "\a" << std::endl;
 
 		while(t < init_t + boost::posix_time::seconds(T_stop-T_start) )

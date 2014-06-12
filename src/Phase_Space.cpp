@@ -82,12 +82,8 @@ int main()
 			std::cout << "Premere un tasto per iniziare la prova" << std::endl;
 			rip++;
 			std::cin.get();
-			std::cout<<"prima init_PhaseSpace"<<std::endl;
 			sleep(time_start);
-				std::cout<<"dopo init_PhaseSpace"<<std::endl;
 			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));
-			
-		
 			
 			// inizializza thread kinect RGB
 			// inizializza thread kinect pcd
