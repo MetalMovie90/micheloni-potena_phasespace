@@ -76,8 +76,6 @@ void GetData(char* oggetto, int rip){
 	char *filename_end = new char[40];
 	char ripc[10];
 
-	//while(repeat >= 1)
-	//{
         strcpy(filename_end, filename);
 	    strcat(filename_end, oggetto);
 		repeat = 0;
@@ -87,23 +85,14 @@ void GetData(char* oggetto, int rip){
 
 		Marker = fopen( filename_end ,"w");
 	
-
-   
-
-
         int n_marker;
         int num = 0;
         int err;
-
-        //sleep(T_start);
 
 		boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
 		boost::posix_time::ptime init_t = t;
 		boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(1000000/OWL_MAX_FREQUENCY);
 		std::cout << "\a" << std::endl;
-		
-		// avvia streaming dati
- 		//this->start_streaming_PhaseSpace();
 
 		while(t < init_t + boost::posix_time::seconds(T_stop-T_start) )
 		{
@@ -118,8 +107,7 @@ void GetData(char* oggetto, int rip){
 
             if(n_marker>0)
             {
-        num=0;
-		//fprintf(Marker," Sono nella prova %f \n", float( clock() - begin_time )/CLOCKS_PER_SEC);
+        	num=0;
 				for(int i = 0; i < n_marker; i++)
 				{
 					if(markers[i].cond > 0)
@@ -138,15 +126,11 @@ void GetData(char* oggetto, int rip){
 	    	}
 		}
 		
-		// interrompi streaming dati
-// 		this->stop_streaming_PhaseSpace();
-		
 		std::cout << "\a" << std::endl;
 		fclose(Marker);
 		delete filename_end;
 
 
-	//}
 };
 
 void init_PhaseSpace(int INIT_FLAGS, int MARKER_COUNT,std::string IP_string){
