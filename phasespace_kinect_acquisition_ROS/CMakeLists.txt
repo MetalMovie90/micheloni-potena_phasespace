@@ -5,7 +5,9 @@ set(CMAKE_CXX_FLAGS "-std=c++0x")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED roscpp std_srvs sensor_msgs pcl_ros pcl_conversions)
+
+find_package(PCL 1.7 REQUIRED)
 
 set(PROJECT_ROOT_PATH ..)
 
@@ -93,7 +95,9 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include
+  ${catkin_INCLUDE_DIRS}
   ${PROJECT_ROOT_PATH}/include
+  ${pcl_INCLUDE_DIRS}
 )
 
 link_directories(
@@ -117,6 +121,7 @@ add_executable(phasespace_kinect_acquisition_node
 ## Specify libraries to link a library or executable target against
 target_link_libraries(phasespace_kinect_acquisition_node
   ${catkin_LIBRARIES}
+  ${pcl_LIBRARIES}
   owlsock
 )
 

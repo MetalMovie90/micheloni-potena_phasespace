@@ -6,6 +6,13 @@
 */
 //
 
+// ROS headers
+#include <ros/ros.h>
+#include <sensor_msgs/PointCloud.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/point_cloud_conversion.h>
+#include <pcl_conversions/pcl_conversions.h>
+
 #define T_STEP_KINECTRGB_MICROSEC 1000000.0/15.0
 #define T_STEP_KINECTPCD_MICROSEC 1000000.0/15.0
 
@@ -30,15 +37,30 @@ void PSGetData(PhaseSpace* PS,char* object, int rip)
 //*******************************************************************************************
 // kinectRGB THREAD FUNCTION
 //*******************************************************************************************
-void* kinectRGB(void* noarg)
+void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_)
 {
 	boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
-	boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(T_STEP_KINECTRGB_MICROSEC);
-
-	while(1 /*RUNNING*/)
+	boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(T_STEP_KINECTPCD_MICROSEC);
+	
+    std::string topic = nh_.resolveName("/camera/depth_registered/points");
+    ROS_INFO("waiting for a point_cloud2 on topic %s", topic.c_str());
+	
+    sensor_msgs::PointCloud2::ConstPtr scene_ptr (new sensor_msgs::PointCloud2);
+    
+	while(1 /*RUNNING*/) // ToDo: exit the loop when the Acquisition/PSGetData is done
 	{
-		//istruzioni
+        scene_ptr = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(topic, nh_, ros::Duration(3.0));
+		if (!scene_ptr)
+		{
+			ROS_ERROR("no point_cloud2 has been received");
+            return;
+		}
+
+		pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGBA>);
+		pcl::fromROSMsg (*scene_ptr, *cloud_ptr);
 		
+		// the filename has the timestamp to sync with the rest of the data.
+        PS->WritePCD( cloud_ptr, (double)td.seconds() + td.fractional_seconds()/1000000.0 );
 		
 		t += inc;
 
@@ -46,21 +68,23 @@ void* kinectRGB(void* noarg)
 		if( !(td.fractional_seconds() < 0) )
         {
 			usleep(td.fractional_seconds());
-			//cout << "Wait interval (ATI): " << td << endl;
         }
         else
         {
-        	//cout << "Wait interval (NEG-ATI): " << td << endl;
+
         }
+        std::cout << "[INFO] Exiting kinectPCD thread..." << std::endl;
 	}
 
 	std::cout << "[INFO] Exiting kinectRGB thread..." << std::endl;
-	return NULL;
+    return;
 }
 
 
-int main()
+int main(int argc, char **argv)
 {
+	ros::init(argc, argv, "phasespace_kinect_acquisition_node");
+	ros::NodeHandle nh;
     
 	int MARKER_COUNT = 72;
 	int INIT_FLAGS = 0; 
@@ -125,6 +149,8 @@ int main()
 			// fai partire tutti i thread, compreso uno che fa soltanto Marker->GetData();
 // 			Marker->GetData(objects.at(p), rip);
 // 			Marker->stop_PhaseSpace();
+			std::thread thrKinectPCD(kinectPCD, std::ref(Marker), std::ref(nh));
+			
 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
 			thrGetData.join();
 			std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;

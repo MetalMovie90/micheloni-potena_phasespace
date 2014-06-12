@@ -6,7 +6,6 @@
 */
 //
 
-
 #include <iostream>
 #include <time.h>
 #include <vector>
@@ -18,6 +17,11 @@
 #include <fcntl.h> 
 #include "owl.h"
 #include <boost/date_time/posix_time/posix_time.hpp>   
+
+// PCL headers
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/io/pcd_io.h>
 
 
 class PhaseSpace{
@@ -69,6 +73,12 @@ strcat(filename,"_");
 
 
 };
+
+void WritePCD(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, double timeStamp )
+{
+	pcl::PCDWriter writer;
+    writer.writeBinaryCompressed(filename + std::string("_") + boost::lexical_cast<std::string>(timeStamp) + std::string(".pcd"), *cloud);
+}
 
 void GetData(char* oggetto, int rip){
 
