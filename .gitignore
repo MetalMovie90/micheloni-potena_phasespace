@@ -20,6 +20,12 @@
 *.out
 *.app
 
+# Others
+*.kdev4
+*.mat
+*.dat
+*~
+
 # Typical building folders
 build
 BUILD

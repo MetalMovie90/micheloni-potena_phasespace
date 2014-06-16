@@ -3,9 +3,9 @@
 clear all
 load prova.mat
 
-[n,m] = size(alessioffasciugacapelli1);
+[n,m] = size(Alessioprova2telefonino1);
 
-dati = alessioffasciugacapelli1;
+dati = Alessioprova2telefonino1;
 
 [Marker, sample] = read_marker(dati, 5);
 

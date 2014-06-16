@@ -99,7 +99,7 @@ void GetData(char* oggetto, int rip){
         int num = 0;
         int err;
 
-        while(  ( n_marker = owlGetMarkers(markers, 72) == 0 )  );
+        while(  owlGetMarkers(markers, 72) == 0  );
 
 		boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
 		boost::posix_time::ptime init_t = t;
@@ -183,6 +183,9 @@ void init_PhaseSpace(int INIT_FLAGS, int MARKER_COUNT,std::string IP_string){
 // start data streaming
 void start_streaming_PhaseSpace()
 {
+ 
+    owlSetFloat(OWL_FREQUENCY, OWL_MAX_FREQUENCY);
+
 	// start streaming
 	owlSetInteger(OWL_STREAMING, OWL_ENABLE);
 };
@@ -193,7 +196,7 @@ void stop_streaming_PhaseSpace()
  
     owlSetFloat(OWL_FREQUENCY, OWL_MAX_FREQUENCY);
 
-	// start streaming
+	// stop streaming
 	owlSetInteger(OWL_STREAMING, OWL_DISABLE);
 };
 

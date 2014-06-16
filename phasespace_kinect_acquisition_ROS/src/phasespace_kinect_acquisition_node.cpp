@@ -55,6 +55,10 @@ void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_)
 			ROS_ERROR("no point_cloud2 has been received");
             return;
 		}
+		else
+		{
+			ROS_INFO("point_cloud read!");
+		}
 
 		pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGBA>);
 		pcl::fromROSMsg (*scene_ptr, *cloud_ptr);
@@ -141,6 +145,7 @@ int main(int argc, char **argv)
 			std::cout << "Premere un tasto per iniziare la prova" << std::endl;
 			rip++;
 			std::cin.get();
+			sleep(time_start);
 			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));
 			
 			// inizializza thread kinect RGB
@@ -149,7 +154,7 @@ int main(int argc, char **argv)
 			// fai partire tutti i thread, compreso uno che fa soltanto Marker->GetData();
 // 			Marker->GetData(objects.at(p), rip);
 // 			Marker->stop_PhaseSpace();
-			std::thread thrKinectPCD(kinectPCD, std::ref(Marker), std::ref(nh));
+// 			std::thread thrKinectPCD(kinectPCD, std::ref(Marker), std::ref(nh));
 			
 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
 			thrGetData.join();
