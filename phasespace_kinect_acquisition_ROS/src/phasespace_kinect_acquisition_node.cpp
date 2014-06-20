@@ -30,7 +30,6 @@ void PSGetData(PhaseSpace* PS,char* object, int rip)
 {
 	PS->GetData(object,rip);
 	
-	PS->stop_PhaseSpace(); 
 	std::cout << "[INFO] Exiting PSGetData thread..." << std::endl;
 	return;
 }
@@ -150,16 +149,10 @@ int main(int argc, char **argv)
 			std::cin.get();
 			std::thread thrKinectPCD(kinectPCD, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)));
 			sleep(time_start);
-			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));
-			
-			// fai partire tutti i thread, compreso uno che fa soltanto Marker->GetData();
-// 			Marker->GetData(objects.at(p), rip);
-// 			Marker->stop_PhaseSpace();
-
-			
+			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));		
 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
 			thrGetData.join();
-			
+		    Marker->stop_PhaseSpace(); 
             std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
 			std::cin >> repeat;
 			std::cin.ignore(INT_MAX,'\n');
