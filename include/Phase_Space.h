@@ -144,10 +144,11 @@ void GetData(char* oggetto, int rip){
 	    		usleep(td.fractional_seconds());
 	    	}
 		}
-		
+		read = 0; 
 		std::cout << "\a" << std::endl;
 		fclose(Marker);
 		delete filename_end;
+		
 
 
 };

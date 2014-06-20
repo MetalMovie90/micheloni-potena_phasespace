@@ -30,8 +30,7 @@ void PSGetData(PhaseSpace* PS,char* object, int rip)
 {
 	PS->GetData(object,rip);
 	
-	PS->stop_PhaseSpace();
-	PS->read = 0;  
+	PS->stop_PhaseSpace(); 
 	std::cout << "[INFO] Exiting PSGetData thread..." << std::endl;
 	return;
 }
@@ -44,8 +43,8 @@ void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto)
 	boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
 	boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(T_STEP_KINECTPCD_MICROSEC);
 	boost::posix_time::ptime init_t = t;
-    //std::string topic = nh_.resolveName("/camera/depth_registered/points");
-    std::string topic = nh_.resolveName("/camera/rgb/image_rect_color");
+    std::string topic = nh_.resolveName("/camera/depth_registered/points");
+    //std::string topic = nh_.resolveName("/camera/rgb/image_rect_color");
     
 	
     sensor_msgs::PointCloud2::ConstPtr scene_ptr (new sensor_msgs::PointCloud2);
@@ -114,6 +113,7 @@ int main(int argc, char **argv)
 	std::cin >> task;
 
 	std::cout << "Inserire il tempo per il bip iniziale e per quello finale " << std::endl;
+	std::cout << "(Il tempo iniziale deve essere di almeno 4 secondi per permettere una corretta inizializzazione della kinect) " << std::endl;
 	std::cin >> time_start;
 	std::cin >> time_stop;
 	std::cin.ignore(INT_MAX,'\n');
@@ -159,6 +159,7 @@ int main(int argc, char **argv)
 			
 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
 			thrGetData.join();
+			
             std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
 			std::cin >> repeat;
 			std::cin.ignore(INT_MAX,'\n');
