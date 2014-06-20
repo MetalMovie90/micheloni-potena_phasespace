@@ -37,6 +37,7 @@ char extension[5];
 FILE* Marker;
 int repeat;
 OWLMarker *markers;
+int read;
 
 
 PhaseSpace(){
@@ -51,6 +52,7 @@ PhaseSpace(){
     strcpy(extension, ".dat");
 	repeat = 1;
     markers = new OWLMarker[72];
+    read = 0;
 };
 
 ~PhaseSpace(){
@@ -74,10 +76,13 @@ strcat(filename,"_");
 
 };
 
-void WritePCD(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, double timeStamp )
+void WritePCD(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, double timeStamp, char* oggetto )
 {
 	pcl::PCDWriter writer;
-    writer.writeBinaryCompressed(filename + std::string("_") + boost::lexical_cast<std::string>(timeStamp) + std::string(".pcd"), *cloud);
+	char *filename_tot = new char[40];
+	strcpy(filename_tot, filename);
+	strcat(filename_tot, oggetto);
+    writer.writeBinaryCompressed(filename_tot + std::string("_") + boost::lexical_cast<std::string>(timeStamp) + std::string(".pcd"), *cloud);
 }
 
 void GetData(char* oggetto, int rip){
@@ -106,6 +111,7 @@ void GetData(char* oggetto, int rip){
 		boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(1000000/OWL_MAX_FREQUENCY);
 
 		std::cout << "\a" << std::endl;
+        
 
 		while(t < init_t + boost::posix_time::seconds(T_stop-T_start) )
 		{

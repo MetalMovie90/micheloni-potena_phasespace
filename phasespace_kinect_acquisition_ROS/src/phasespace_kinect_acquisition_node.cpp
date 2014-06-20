@@ -20,6 +20,7 @@
 #include "owl.h"
 #include <thread>
 
+int time_start, time_stop;
 
 // dichiarazione thread
 //*******************************************************************************************
@@ -30,26 +31,29 @@ void PSGetData(PhaseSpace* PS,char* object, int rip)
 	PS->GetData(object,rip);
 	
 	PS->stop_PhaseSpace();
+	PS->read = 0;  
 	std::cout << "[INFO] Exiting PSGetData thread..." << std::endl;
 	return;
 }
 
 //*******************************************************************************************
-// kinectRGB THREAD FUNCTION
+// kinectPCD THREAD FUNCTION
 //*******************************************************************************************
-void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_)
+void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto)
 {
 	boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
 	boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(T_STEP_KINECTPCD_MICROSEC);
-	
-    std::string topic = nh_.resolveName("/camera/depth_registered/points");
-    ROS_INFO("waiting for a point_cloud2 on topic %s", topic.c_str());
+	boost::posix_time::ptime init_t = t;
+    //std::string topic = nh_.resolveName("/camera/depth_registered/points");
+    std::string topic = nh_.resolveName("/camera/rgb/image_rect_color");
+    
 	
     sensor_msgs::PointCloud2::ConstPtr scene_ptr (new sensor_msgs::PointCloud2);
     
-	while(1 /*RUNNING*/) // ToDo: exit the loop when the Acquisition/PSGetData is done
+	while(PS->read == 1) // ToDo: exit the loop when the Acquisition/PSGetData is done
 	{
-        scene_ptr = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(topic, nh_, ros::Duration(3.0));
+		ROS_INFO("waiting for a point_cloud2 on topic %s", topic.c_str());
+        scene_ptr = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(topic, nh_);
 		if (!scene_ptr)
 		{
 			ROS_ERROR("no point_cloud2 has been received");
@@ -64,7 +68,7 @@ void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_)
 		pcl::fromROSMsg (*scene_ptr, *cloud_ptr);
 		
 		// the filename has the timestamp to sync with the rest of the data.
-        PS->WritePCD( cloud_ptr, (double)td.seconds() + td.fractional_seconds()/1000000.0 );
+        PS->WritePCD( cloud_ptr, (double)td.seconds() + td.fractional_seconds()/1000000.0, std::ref(oggetto) );
 		
 		t += inc;
 
@@ -77,10 +81,9 @@ void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_)
         {
 
         }
-        std::cout << "[INFO] Exiting kinectPCD thread..." << std::endl;
 	}
 
-	std::cout << "[INFO] Exiting kinectRGB thread..." << std::endl;
+	std::cout << "[INFO] Exiting kinectPCD thread..." << std::endl;
     return;
 }
 
@@ -90,6 +93,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "phasespace_kinect_acquisition_node");
 	ros::NodeHandle nh;
     
+    PhaseSpace* Marker;
 	int MARKER_COUNT = 72;
 	int INIT_FLAGS = 0; 
 	int n = 10;
@@ -98,7 +102,7 @@ int main(int argc, char **argv)
 	char oggetto[20];
 	std::vector<char*> objects;
 	std::vector<int> sample (10);
-	int time_start, time_stop;	
+	
 	char str[10][20] = {"penna","dizionario","cancellino","occhiali","telefonino"
 		               ,"asciuga capelli","bicchiere","tazza da the","asciugamano","coltello"};
 
@@ -113,7 +117,6 @@ int main(int argc, char **argv)
 	std::cin >> time_start;
 	std::cin >> time_stop;
 	std::cin.ignore(INT_MAX,'\n');
-
     
 	for(unsigned int k=0; k<sample.size(); k++)
 	{
@@ -126,9 +129,9 @@ int main(int argc, char **argv)
 	{
 	
 		int rip = 0;
-		PhaseSpace* Marker;
 		Marker = new PhaseSpace();
 		Marker->GetInfo(soggetto, task, time_start, time_stop);
+		Marker->read = 1; 
 
 		srand (time(0));
 		p = rand() % objects.size();
@@ -145,20 +148,18 @@ int main(int argc, char **argv)
 			std::cout << "Premere un tasto per iniziare la prova" << std::endl;
 			rip++;
 			std::cin.get();
+			std::thread thrKinectPCD(kinectPCD, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)));
 			sleep(time_start);
 			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));
-			
-			// inizializza thread kinect RGB
-			// inizializza thread kinect pcd
 			
 			// fai partire tutti i thread, compreso uno che fa soltanto Marker->GetData();
 // 			Marker->GetData(objects.at(p), rip);
 // 			Marker->stop_PhaseSpace();
-// 			std::thread thrKinectPCD(kinectPCD, std::ref(Marker), std::ref(nh));
+
 			
 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
 			thrGetData.join();
-			std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
+            std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
 			std::cin >> repeat;
 			std::cin.ignore(INT_MAX,'\n');
 
