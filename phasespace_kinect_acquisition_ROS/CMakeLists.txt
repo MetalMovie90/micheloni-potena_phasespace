@@ -5,9 +5,20 @@ set(CMAKE_CXX_FLAGS "-std=c++0x")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED roscpp std_srvs sensor_msgs pcl_ros pcl_conversions)
+find_package(
+	catkin REQUIRED 
+	roscpp 
+	std_srvs 
+	sensor_msgs 
+	pcl_ros 
+	pcl_conversions
+  cv_bridge
+  image_transport
+  std_msgs
+	)
 
 find_package(PCL 1.7 REQUIRED)
+find_package(OpenCV REQUIRED)
 
 set(PROJECT_ROOT_PATH ..)
 
@@ -98,6 +109,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${PROJECT_ROOT_PATH}/include
   ${pcl_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 link_directories(

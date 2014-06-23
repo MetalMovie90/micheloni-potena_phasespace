@@ -20,6 +20,11 @@
 #include "owl.h"
 #include <thread>
 
+#include <cv_bridge/cv_bridge.h>
+#include <image_transport/image_transport.h>
+#include <sensor_msgs/image_encodings.h>
+
+
 int time_start, time_stop;
 
 // dichiarazione thread
@@ -38,36 +43,35 @@ void PSGetData(PhaseSpace* PS,char* object, int rip)
 //*******************************************************************************************
 // kinectPCD THREAD FUNCTION
 //*******************************************************************************************
-void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto)
+void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
 {
 	boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
 	boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(T_STEP_KINECTPCD_MICROSEC);
 	boost::posix_time::ptime init_t = t;
-    std::string topic = nh_.resolveName("/camera/depth_registered/points");
-    //std::string topic = nh_.resolveName("/camera/rgb/image_rect_color");
-    
+    std::string topic = nh_.resolveName("/camera/rgb/image_rect_color");
 	
-    sensor_msgs::PointCloud2::ConstPtr scene_ptr (new sensor_msgs::PointCloud2);
+    sensor_msgs::Image::ConstPtr scene_ptr (new sensor_msgs::Image);
     
 	while(PS->read == 1) // ToDo: exit the loop when the Acquisition/PSGetData is done
 	{
-		ROS_INFO("waiting for a point_cloud2 on topic %s", topic.c_str());
-        scene_ptr = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(topic, nh_);
+		ROS_INFO("waiting for a image on topic %s", topic.c_str());
+        scene_ptr = ros::topic::waitForMessage<sensor_msgs::Image>(topic, nh_);
+        cv_bridge::CvImagePtr cv_ptr;
+        cv_ptr = cv_bridge::toCvCopy(scene_ptr, sensor_msgs::image_encodings::BGR8);
+
+
 		if (!scene_ptr)
 		{
-			ROS_ERROR("no point_cloud2 has been received");
+			ROS_ERROR("no image has been received");
             return;
 		}
 		else
 		{
-			ROS_INFO("point_cloud read!");
+			ROS_INFO("image read!");
 		}
-
-		pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGBA>);
-		pcl::fromROSMsg (*scene_ptr, *cloud_ptr);
 		
 		// the filename has the timestamp to sync with the rest of the data.
-        PS->WritePCD( cloud_ptr, (double)td.seconds() + td.fractional_seconds()/1000000.0, std::ref(oggetto) );
+        PS->WriteIMAGE( cv_ptr->image, (double)td.seconds() + td.fractional_seconds()/1000000.0, std::ref(oggetto), rip );
 		
 		t += inc;
 
@@ -113,7 +117,7 @@ int main(int argc, char **argv)
 	std::cin >> task;
 
 	std::cout << "Inserire il tempo per il bip iniziale e per quello finale " << std::endl;
-	std::cout << "(Il tempo iniziale deve essere di almeno 4 secondi per permettere una corretta inizializzazione della kinect) " << std::endl;
+	std::cout << "(Il tempo iniziale deve essere di almeno 3 secondi per permettere una corretta inizializzazione della kinect) " << std::endl;
 	std::cin >> time_start;
 	std::cin >> time_stop;
 	std::cin.ignore(INT_MAX,'\n');
@@ -131,7 +135,6 @@ int main(int argc, char **argv)
 		int rip = 0;
 		Marker = new PhaseSpace();
 		Marker->GetInfo(soggetto, task, time_start, time_stop);
-		Marker->read = 1; 
 
 		srand (time(0));
 		p = rand() % objects.size();
@@ -143,12 +146,13 @@ int main(int argc, char **argv)
 	    char repeat = 'y';
 		while(repeat=='y')
 		{
+            Marker->read = 1;
 			sample.at(p) = 1;
 			std::cout << "E' stato selezionato l'oggetto " << objects.at(p) << ", numero " << k + 1 << " di " << n  << std::endl;
 			std::cout << "Premere un tasto per iniziare la prova" << std::endl;
 			rip++;
 			std::cin.get();
-			std::thread thrKinectPCD(kinectPCD, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)));
+			std::thread thrKinectPCD(kinectPCD, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
 			sleep(time_start);
 			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));
 			
@@ -159,6 +163,7 @@ int main(int argc, char **argv)
 			
 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
 			thrGetData.join();
+			thrKinectPCD.join();
 			
             std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
 			std::cin >> repeat;

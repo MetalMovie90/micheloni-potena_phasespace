@@ -18,10 +18,14 @@
 #include "owl.h"
 #include <boost/date_time/posix_time/posix_time.hpp>   
 
+
 // PCL headers
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
+
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 
 class PhaseSpace{
@@ -76,13 +80,28 @@ strcat(filename,"_");
 
 };
 
-void WritePCD(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, double timeStamp, char* oggetto )
+void WriteIMAGE(cv::Mat image, double timeStamp, char* oggetto, int rip )
 {
-	pcl::PCDWriter writer;
 	char *filename_tot = new char[40];
 	strcpy(filename_tot, filename);
 	strcat(filename_tot, oggetto);
-    writer.writeBinaryCompressed(filename_tot + std::string("_") + boost::lexical_cast<std::string>(timeStamp) + std::string(".pcd"), *cloud);
+
+	char ripc[5];
+    sprintf(ripc, "%d", rip);
+	strcat(filename_tot, ripc);
+	strcat(filename_tot, "_");
+
+	char extension[10];
+	strcpy(extension,".jpg");
+	
+	char sec[20];
+	sprintf(sec, "%f", timeStamp);
+
+	strcat(filename_tot, sec);
+	strcat(filename_tot, extension);
+
+	imwrite(filename_tot, image);
+
 }
 
 void GetData(char* oggetto, int rip){
