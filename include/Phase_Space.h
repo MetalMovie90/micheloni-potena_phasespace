@@ -33,11 +33,12 @@ class PhaseSpace{
 public:
 
 int T_start, T_stop;
-char  Subject[20];
+char Subject[20];
 char Task[20];
-char filename[30];
+char filename[40];
 char Object[20];
 char extension[5];
+char folder[60];
 FILE* Marker;
 int repeat;
 OWLMarker *markers;
@@ -51,7 +52,8 @@ PhaseSpace(){
 	Subject[20];
     Task[20];
 	Object[20];
-	filename[30];
+	folder[60];
+	filename[40];
 	Marker = NULL;
     strcpy(extension, ".dat");
 	repeat = 1;
@@ -76,17 +78,25 @@ strcpy(filename,Subject);
 strcat(filename,"_");
 strcat(filename,Task);
 strcat(filename,"_");
+strcpy(folder, Subject);
+strcat(folder, Task);
+strcat(folder,"/");
 
 
 };
 
 void WriteIMAGE(cv::Mat image, double timeStamp, char* oggetto, int rip )
 {
-	char *filename_tot = new char[40];
+	char *filename_tot = new char[60];
+	char *folder_tot = new char[80];
 	strcpy(filename_tot, filename);
 	strcat(filename_tot, oggetto);
+	strcpy(folder_tot,folder);
+    strcat(folder_tot, oggetto);
+	strcat(folder_tot,"/");
 
-	char ripc[5];
+
+    char ripc[5];
     sprintf(ripc, "%d", rip);
 	strcat(filename_tot, ripc);
 	strcat(filename_tot, "_");
@@ -99,25 +109,36 @@ void WriteIMAGE(cv::Mat image, double timeStamp, char* oggetto, int rip )
 
 	strcat(filename_tot, sec);
 	strcat(filename_tot, extension);
+	strcat(folder_tot,filename_tot);
 
-	imwrite(filename_tot, image);
+	imwrite(folder_tot, image);
+
+	delete filename_tot;
+	delete folder_tot;
 
 }
 
 void GetData(char* oggetto, int rip){
 
 	
-	char *filename_end = new char[40];
+	char *filename_end = new char[60];
+	char *folder_tot = new char[80];
 	char ripc[10];
 
+        strcpy(folder_tot,folder);
+	    strcat(folder_tot, oggetto);
+	    strcat(folder_tot,"/");
         strcpy(filename_end, filename);
 	    strcat(filename_end, oggetto);
 		repeat = 0;
         sprintf(ripc,"%d",rip);
 		strcat(filename_end, ripc);
 		strcat(filename_end, extension);
+		strcat(folder_tot,filename_end);
 
-		Marker = fopen( filename_end ,"w");
+std::cout << folder_tot << std::endl; 
+
+		Marker = fopen( folder_tot ,"w");
 	
         int n_marker;
         int num = 0;
@@ -167,6 +188,7 @@ void GetData(char* oggetto, int rip){
 		std::cout << "\a" << std::endl;
 		fclose(Marker);
 		delete filename_end;
+		delete folder_tot;
 		
 
 

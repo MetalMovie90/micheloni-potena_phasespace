@@ -29,17 +29,32 @@ int main()
     
 	int MARKER_COUNT = 72;
 	int INIT_FLAGS = 0; 
-	int n = 10;
 	char soggetto[20];
 	char task[20];
 	char oggetto[20];
 	std::vector<char*> objects;
 	std::vector<int> sample (10);
 	int time_start, time_stop;	
-	char str[10][20] = {"penna","dizionario","cancellino","occhiali","telefonino"
+	char str[46][20] = {"occhiali","tazza the","lattina","penna","forbici"
+		               ,"nastro adesivo","pc mouse","chiave","cacciavite","spillatrice",
+		                "bicchiere plastica","cartella documenti","cancellino","pinze","cucchiaio"
+		               ,"spilla","pettine","cd-rom,","lucchetto","lampadina",
+		                "cordless","graffetta","mela","patata","scodella"
+		               ,"smarth phone","pila bottone","pila stilo","bottiglia plastica","padella",
+		                "barattolo vetro","pc portatile","telecomando","bottiglia vetro","teiera"
+		               ,"lettore cd","sveglia","racchetta tennis","palla tennis","videocamera",
+		                "audio cassetta","video cassetta","dado","bottone","beuta", "banana/spazzola"};
+
+    /*char str[10][20] = {"penna","dizionario","cancellino","occhiali","telefonino"
 		               ,"asciuga capelli","bicchiere","tazza da the","asciugamano","coltello"};
 
+    char str[10][20] = {"penna","dizionario","cancellino","occhiali","telefonino"
+		               ,"asciuga capelli","bicchiere","tazza da the","asciugamano","coltello"};*/
 
+   
+    int n = sizeof(str);
+    std::cout << n << std::endl:
+    
 	std::cout << "Inserire il nome del soggetto: " << std::endl;
 	std::cin >> soggetto;
 	

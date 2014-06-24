@@ -44,6 +44,16 @@ void PSGetData(PhaseSpace* PS,char* object, int rip)
 //*******************************************************************************************
 void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
 {
+
+    std::string b = "/";
+    std::string a = "mkdir ";
+    std::string c,d,e;
+    c.assign(PS->Subject);
+    d.assign(oggetto);
+    e.assign(PS->Task);
+    a = a + c + e + b + d + b;
+    system(a.c_str());
+
 	boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
 	boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(T_STEP_KINECTPCD_MICROSEC);
 	boost::posix_time::ptime init_t = t;
@@ -98,22 +108,56 @@ int main(int argc, char **argv)
     PhaseSpace* Marker;
 	int MARKER_COUNT = 72;
 	int INIT_FLAGS = 0; 
-	int n = 10;
 	char soggetto[20];
 	char task[20];
 	char oggetto[20];
 	std::vector<char*> objects;
-	std::vector<int> sample (10);
 	
-	char str[10][20] = {"penna","dizionario","cancellino","occhiali","telefonino"
-		               ,"asciuga capelli","bicchiere","tazza da the","asciugamano","coltello"};
+	/*char str[46][20] = {"occhiali","tazza_the","lattina","penna","forbici"
+		               ,"nastro_adesivo","pc_mouse","chiave","cacciavite","spillatrice",
+		                "bicchiere_plastica","cartella_documenti","cancellino","pinze","cucchiaio"
+		               ,"spilla","pettine","cd-rom","lucchetto","lampadina",
+		                "cordless","graffetta","mela","patata","scodella"
+		               ,"smartphone","pila_bottone","pila_stilo","bottiglia_plastica","padella",
+		                "barattolo_vetro","pc_portatile","telecomando","bottiglia_vetro","teiera"
+		               ,"lettore_cd","sveglia","racchetta_tennis","palla_tennis","videocamera",
+		                "audio_cassetta","video_cassetta","dado","bottone","beuta", "banana_spazzola"};*/
 
+    /*char str[52][20] = {"mela","martello","banana_spazzola","dado","palla_tennis"
+		               ,"coltello","boccale_birra","coperchio_pentola","bottiglia_vetro","teiera",
+		                "scatola_mattone","secchio","calcolatrice","lampadina","gesso"
+		               ,"bottiglia_plastica","caramella","spilla","tazza_the","pc_portatile",
+		                "sigaretta","penna","posacenere","carta_gioco","bottone"
+		               ,"bicchiere_plastica","fune","pettine","forbici","cd-rom",
+		                "cacciavite","pc_mouse","spillatrice","dizionario","piatto"
+		               ,"cucchiaio","scodella","cordless","chiave","racchetta_tennis",
+		                "spazzolino","stuzzicadenti","uovo","pila_stilo","pila_bottone","ombrello",
+		                "fresbee","chiave_inglese","padella","accendino","taglierino","asciuga_capelli"};*/
+
+    char str[18][20] = {"dentifr_spazzol","pettin_capelli","abbott_camicia","chiud_cerniera","mettere_calze"
+		               ,"mettere_scarpe","bere","usare_cucchiaio","usare_colt_forc","versare_acqua",
+		                "scri_foglio","utilizz_forbici","chiave_serrat","utilizz_smphone","chiodi_martello"
+		               ,"pieg_asciug","aprire_lettera","mescolare"};
+
+    
+
+    int n = (sizeof(str)/sizeof(*str));
+    std::vector<int> sample (n);
 
 	std::cout << "Inserire il nome del soggetto: " << std::endl;
 	std::cin >> soggetto;
 	
 	std::cout << "Inserire il nome del task da eseguire: " << std::endl;
 	std::cin >> task;
+
+    std::string a = "mkdir ";
+    std::string c,d; 
+    c.assign(soggetto);
+    d.assign(task);
+    a = a + c + d;
+
+    system(a.c_str());
+
 
 	std::cout << "Inserire il tempo per il bip iniziale e per quello finale " << std::endl;
 	std::cout << "(Il tempo iniziale deve essere di almeno 3 secondi per permettere una corretta inizializzazione della kinect) " << std::endl;
@@ -156,12 +200,9 @@ int main(int argc, char **argv)
 			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));		
 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
 			thrGetData.join();
-<<<<<<< HEAD
 			thrKinectPCD.join();
 			
-=======
 		    Marker->stop_PhaseSpace(); 
->>>>>>> 4f9283b66606a96d158f5de6bb63b8615b5c8cb9
             std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
 			std::cin >> repeat;
 			std::cin.ignore(INT_MAX,'\n');
