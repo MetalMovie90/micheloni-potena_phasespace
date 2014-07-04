@@ -100,7 +100,7 @@ void kinectPCDimage(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
 }
 
 
-void kinectPCDpc(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
+void kinectPCDpointcloud(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
 {
 
 	std::string b = "/";
@@ -247,7 +247,7 @@ int main(int argc, char **argv)
 			std::cout << "Premere un tasto per iniziare la prova" << std::endl;
 			rip++;
 			std::cin.get();
-			std::thread thrKinectPCD(kinectPCDpc, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
+			std::thread thrKinectPCD(kinectPCDpointcloud, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
 			sleep(time_start);
 			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));		
 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
