@@ -42,7 +42,7 @@ void PSGetData(PhaseSpace* PS,char* object, int rip)
 //*******************************************************************************************
 // kinectPCD THREAD FUNCTION
 //*******************************************************************************************
-void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
+void kinectPCDimage(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
 {
 
     std::string b = "/";
@@ -100,6 +100,70 @@ void kinectPCD(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
 }
 
 
+void kinectPCDpc(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
+{
+
+	std::string b = "/";
+    std::string a = "mkdir ";
+    std::string c,d,e;
+    c.assign(PS->Subject);
+    d.assign(oggetto);
+    e.assign(PS->Task);
+    a = a + c + e + b + d + b;
+    system(a.c_str());
+
+	boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
+	boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(T_STEP_KINECTPCD_MICROSEC);
+	boost::posix_time::ptime init_t = t;
+
+	
+    std::string topic = nh_.resolveName("/camera/depth_registered/points");
+    sensor_msgs::PointCloud2::ConstPtr scene_ptr (new sensor_msgs::PointCloud2);
+    
+	while(PS->read == 1) // ToDo: exit the loop when the Acquisition/PSGetData is done
+	{
+
+		ROS_INFO("waiting for a point cloud on topic %s", topic.c_str());
+        scene_ptr = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(topic, nh_);
+
+
+		if (!scene_ptr)
+		{
+			ROS_ERROR("no point cloud has been received");
+            return;
+		}
+		else
+		{
+			ROS_INFO("point cloud read!");
+		}
+		
+		pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGBA>);
+        pcl::fromROSMsg(*scene_ptr, *cloud_ptr);
+
+		// the filename has the timestamp to sync with the rest of the data.
+        PS->WritePCD( cloud_ptr, (double)td.seconds() + td.fractional_seconds()/1000000.0, std::ref(oggetto), rip );
+		
+		t += inc;
+
+		td = t - boost::posix_time::microsec_clock::universal_time();
+		if( !(td.fractional_seconds() < 0) )
+        {
+			usleep(td.fractional_seconds());
+        }
+        else
+        {
+
+        }
+	}
+
+	std::cout << "[INFO] Exiting kinectPCD thread..." << std::endl;
+    return;
+}
+
+
+
+
+
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "phasespace_kinect_acquisition_node");
@@ -113,27 +177,15 @@ int main(int argc, char **argv)
 	char oggetto[20];
 	std::vector<char*> objects;
 	
-	/*char str[46][20] = {"occhiali","tazza_the","lattina","penna","forbici"
-		               ,"nastro_adesivo","pc_mouse","chiave","cacciavite","spillatrice",
-		                "bicchiere_plastica","cartella_documenti","cancellino","pinze","cucchiaio"
-		               ,"spilla","pettine","cd-rom","lucchetto","lampadina",
-		                "cordless","graffetta","mela","patata","scodella"
-		               ,"smartphone","pila_bottone","pila_stilo","bottiglia_plastica","padella",
-		                "barattolo_vetro","pc_portatile","telecomando","bottiglia_vetro","teiera"
-		               ,"lettore_cd","sveglia","racchetta_tennis","palla_tennis","videocamera",
-		                "audio_cassetta","video_cassetta","dado","bottone","beuta", "banana_spazzola"};*/
-
-    /*char str[52][20] = {"mela","martello","banana_spazzola","dado","palla_tennis"
-		               ,"coltello","boccale_birra","coperchio_pentola","bottiglia_vetro","teiera",
-		                "scatola_mattone","secchio","calcolatrice","lampadina","gesso"
-		               ,"bottiglia_plastica","caramella","spilla","tazza_the","pc_portatile",
-		                "sigaretta","penna","posacenere","carta_gioco","bottone"
-		               ,"bicchiere_plastica","fune","pettine","forbici","cd-rom",
-		                "cacciavite","pc_mouse","spillatrice","dizionario","piatto"
-		               ,"cucchiaio","scodella","cordless","chiave","racchetta_tennis",
-		                "spazzolino","stuzzicadenti","uovo","pila_stilo","pila_bottone","ombrello",
-		                "fresbee","chiave_inglese","padella","accendino","taglierino","asciuga_capelli"};*/
-
+	/*char str[40][20] = {"mela","martello","banana_spazzola","dado","palla_tennis"
+		               ,"lampadina","boccale_birra","coperchio_pentola","bottiglia_vetro","teiera",
+		                "sigaretta","smartphone","pc_portatile","tazza_the","gesso"
+		               ,"penna","carta_gioco","bottone","bicchiere_plastica","pettine",
+		                "forbici","cd-rom","cacciavite","pc_mouse","telecomando"
+		               ,"spillatrice","dizionario","cucchiaio","portafoglio","scodella",
+		                "cordless","chiave","spazzolino","scotch","uovo"
+		               ,"chiave_inglese","padella","accendino","fotocamera","videocassetta"};*/
+		               
     char str[18][20] = {"dentifr_spazzol","pettin_capelli","abbott_camicia","chiud_cerniera","mettere_calze"
 		               ,"mettere_scarpe","bere","usare_cucchiaio","usare_colt_forc","versare_acqua",
 		                "scri_foglio","utilizz_forbici","chiave_serrat","utilizz_smphone","chiodi_martello"
@@ -195,7 +247,7 @@ int main(int argc, char **argv)
 			std::cout << "Premere un tasto per iniziare la prova" << std::endl;
 			rip++;
 			std::cin.get();
-			std::thread thrKinectPCD(kinectPCD, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
+			std::thread thrKinectPCD(kinectPCDpc, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
 			sleep(time_start);
 			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));		
 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));

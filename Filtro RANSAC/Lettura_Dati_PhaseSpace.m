@@ -1,13 +1,13 @@
 %% Lettura dati PhaseSpace
 
-clear all
+clear all, clc
 load prova.mat
 
-[n,m] = size(Alessioprova2telefonino1);
+[n,m] = size(alessiograspcucchiaio4);
 
-dati = Alessioprova2telefonino1;
+dati = alessiograspcucchiaio4;
 
-[Marker, sample] = read_marker(dati, 5);
+[Marker, sample] = read_marker(dati, 45);
 
 l=1;
 i=1;

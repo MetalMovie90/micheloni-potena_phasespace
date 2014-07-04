@@ -118,6 +118,48 @@ void WriteIMAGE(cv::Mat image, double timeStamp, char* oggetto, int rip )
 
 }
 
+
+void WritePCD( pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, double timeStamp, char* oggetto, int rip )
+{
+
+	char *filename_tot = new char[60];
+	char *folder_tot = new char[80];
+	strcpy(filename_tot, filename);
+	strcat(filename_tot, oggetto);
+	strcpy(folder_tot,folder);
+    strcat(folder_tot, oggetto);
+	strcat(folder_tot,"/");
+
+
+    char ripc[5];
+    sprintf(ripc, "%d", rip);
+	strcat(filename_tot, ripc);
+	strcat(filename_tot, "_");
+
+	char extension[10];
+	strcpy(extension,".pcd");
+	
+	char sec[20];
+	sprintf(sec, "%f", timeStamp);
+
+	strcat(filename_tot, sec);
+	strcat(filename_tot, extension);
+	strcat(folder_tot,filename_tot);
+
+    pcl::PCDWriter writer;
+    writer.writeBinaryCompressed(folder_tot, *cloud);
+
+
+
+	delete filename_tot;
+	delete folder_tot;
+
+
+
+
+}
+
+
 void GetData(char* oggetto, int rip){
 
 	
