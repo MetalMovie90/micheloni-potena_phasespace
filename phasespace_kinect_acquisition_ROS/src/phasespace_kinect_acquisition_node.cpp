@@ -103,15 +103,6 @@ void kinectPCDimage(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
 void kinectPCDpointcloud(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
 {
 
-	std::string b = "/";
-    std::string a = "mkdir ";
-    std::string c,d,e;
-    c.assign(PS->Subject);
-    d.assign(oggetto);
-    e.assign(PS->Task);
-    a = a + c + e + b + d + b;
-    system(a.c_str());
-
 	boost::posix_time::ptime t = boost::posix_time::microsec_clock::universal_time();
 	boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(T_STEP_KINECTPCD_MICROSEC);
 	boost::posix_time::ptime init_t = t;
@@ -212,7 +203,7 @@ int main(int argc, char **argv)
 
 
 	std::cout << "Inserire il tempo per il bip iniziale e per quello finale " << std::endl;
-	std::cout << "(Il tempo iniziale deve essere di almeno 3 secondi per permettere una corretta inizializzazione della kinect) " << std::endl;
+	// std::cout << "(Il tempo iniziale deve essere di almeno 3 secondi per permettere una corretta inizializzazione della kinect) " << std::endl;
 	std::cin >> time_start;
 	std::cin >> time_stop;
 	std::cin.ignore(INT_MAX,'\n');
@@ -241,18 +232,28 @@ int main(int argc, char **argv)
 	    char repeat = 'y';
 		while(repeat=='y')
 		{
+			// create subject/trial specific directory
+			std::string b = "/";
+		    std::string a = "mkdir ";
+		    std::string c,d,e;
+		    c.assign(Marker->Subject);
+		    d.assign(objects.at(p));
+		    e.assign(Marker->Task);
+		    a = a + c + e + b + d + b;
+		    system(a.c_str());
+
             Marker->read = 1;
 			sample.at(p) = 1;
 			std::cout << "E' stato selezionato l'oggetto " << objects.at(p) << ", numero " << k + 1 << " di " << n  << std::endl;
 			std::cout << "Premere un tasto per iniziare la prova" << std::endl;
 			rip++;
 			std::cin.get();
-			std::thread thrKinectPCD(kinectPCDpointcloud, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
+			// std::thread thrKinectPCD(kinectPCDpointcloud, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
 			sleep(time_start);
 			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));		
 			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
 			thrGetData.join();
-			thrKinectPCD.join();
+			// thrKinectPCD.join();
 			
 		    Marker->stop_PhaseSpace(); 
             std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
