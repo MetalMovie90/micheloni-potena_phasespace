@@ -34,7 +34,7 @@ int time_start, time_stop;
 void PSGetData(PhaseSpace* PS,char* object, int rip)
 {
 	PS->GetData(object,rip);
-	
+
 	std::cout << "[INFO] Exiting PSGetData thread..." << std::endl;
 	return;
 }
@@ -58,9 +58,9 @@ void kinectPCDimage(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
 	boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(T_STEP_KINECTPCD_MICROSEC);
 	boost::posix_time::ptime init_t = t;
     std::string topic = nh_.resolveName("/camera/rgb/image_rect_color");
-	
+
     sensor_msgs::Image::ConstPtr scene_ptr (new sensor_msgs::Image);
-    
+
 	while(PS->read == 1) // ToDo: exit the loop when the Acquisition/PSGetData is done
 	{
 		ROS_INFO("waiting for a image on topic %s", topic.c_str());
@@ -78,10 +78,10 @@ void kinectPCDimage(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int rip)
 		{
 			ROS_INFO("image read!");
 		}
-		
+
 		// the filename has the timestamp to sync with the rest of the data.
         PS->WriteIMAGE( cv_ptr->image, (double)td.seconds() + td.fractional_seconds()/1000000.0, std::ref(oggetto), rip );
-		
+
 		t += inc;
 
 		td = t - boost::posix_time::microsec_clock::universal_time();
@@ -107,10 +107,10 @@ void kinectPCDpointcloud(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int
 	boost::posix_time::time_duration td,inc = boost::posix_time::microseconds(T_STEP_KINECTPCD_MICROSEC);
 	boost::posix_time::ptime init_t = t;
 
-	
+
     std::string topic = nh_.resolveName("/camera/depth_registered/points");
     sensor_msgs::PointCloud2::ConstPtr scene_ptr (new sensor_msgs::PointCloud2);
-    
+
 	while(PS->read == 1) // ToDo: exit the loop when the Acquisition/PSGetData is done
 	{
 
@@ -127,13 +127,13 @@ void kinectPCDpointcloud(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int
 		{
 			ROS_INFO("point cloud read!");
 		}
-		
+
 		pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGBA>);
         pcl::fromROSMsg(*scene_ptr, *cloud_ptr);
 
 		// the filename has the timestamp to sync with the rest of the data.
         PS->WritePCD( cloud_ptr, (double)td.seconds() + td.fractional_seconds()/1000000.0, std::ref(oggetto), rip );
-		
+
 		t += inc;
 
 		td = t - boost::posix_time::microsec_clock::universal_time();
@@ -159,22 +159,25 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "phasespace_kinect_acquisition_node");
 	ros::NodeHandle nh;
-    
+
     PhaseSpace* Marker;
 	int MARKER_COUNT = 72;
-	int INIT_FLAGS = 0; 
+	int INIT_FLAGS = 0;
 	char soggetto[20];
 	char task[20];
 	char oggetto[20];
 	std::vector<char*> objects;
-	
+
 	char str[20][20] = {"teiera","coperchio_pentola","laptop","smartphone","carta","forbici",
 						"cd_rom","cacciavite","pc_mouse","spillatrice","cucchiaio","portafogli",
 						"scodella","chiave","spazzolino","uovo","chiave_inglese","padella",
 						"fotocamera","videocassetta"};
 
-	char str[20][20] = {};
-		               
+	/*char str[20][20] = {"mela","martello","banana","dado","palla_tennis","bottiglia_vetro",
+						"boccale_birra","lampadina","gesso","tazza_the","sigaretta","penna",
+						"bottone","bicchiere_plastica","spazzola","telecomando","dizionrio","cordless",
+						"nastro_adesivo","accendino"};*/
+
     /*char str[10][20] = {"dentifricio_spazzolino","pettinare_capelli","mescolare_cucchiaio","coltello_forchetta",
 						"versare_acqua","scrivere_foglio","utilizzare_forbici","chiave_serratura","usare_smartphone",
 						"chiodo_martello"};*/
@@ -190,12 +193,12 @@ int main(int argc, char **argv)
 	if(choice==1) {
 		std::cout << "Inserire il nome del soggetto: " << std::endl;
 		std::cin >> soggetto;
-	
+
 		std::cout << "Inserire il nome del task da eseguire: " << std::endl;
 		std::cin >> task;
 
     	std::string a = "mkdir ";
-    	std::string c,d; 
+    	std::string c,d;
     	c.assign(soggetto);
     	d.assign(task);
     	a = a + c + d;
@@ -207,7 +210,7 @@ int main(int argc, char **argv)
 		std::cin >> time_start;
 		std::cin >> time_stop;
 		std::cin.ignore(INT_MAX,'\n');
-    
+
 		int p = 0;
 
 		char cont = 'y';
@@ -239,12 +242,12 @@ int main(int argc, char **argv)
 				std::cin.get();
 				// std::thread thrKinectPCD(kinectPCDpointcloud, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
 				sleep(time_start);
-				Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));		
+				Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));
 				std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(oggetto), std::ref(rip));
 				thrGetData.join();
 				// thrKinectPCD.join();
-				
-			    Marker->stop_PhaseSpace(); 
+
+			    Marker->stop_PhaseSpace();
 	            std::cout << "Vuoi ripetere la prova? (y = si) " << std::endl;
 				std::cin >> repeat;
 				std::cin.ignore(INT_MAX,'\n');
@@ -254,7 +257,7 @@ int main(int argc, char **argv)
 			std::cout << "Vuoi continuare con le acquisizioni? (y = si) " << std::endl;
 			std::cin >> cont;
 
-	   		delete Marker;	  
+	   		delete Marker;
 		}
 
 		std::cout << "Prova terminata " << std::endl;
@@ -270,12 +273,12 @@ int main(int argc, char **argv)
 
 		std::cout << "Inserire il nome del soggetto: " << std::endl;
 		std::cin >> soggetto;
-	
+
 		std::cout << "Inserire il nome del task da eseguire: " << std::endl;
 		std::cin >> task;
 
     	std::string a = "mkdir ";
-    	std::string c,d; 
+    	std::string c,d;
     	c.assign(soggetto);
     	d.assign(task);
     	a = a + c + d;
@@ -287,7 +290,7 @@ int main(int argc, char **argv)
 		std::cin >> time_start;
 		std::cin >> time_stop;
 		std::cin.ignore(INT_MAX,'\n');
-    
+
 		for(unsigned int k=0; k<sample.size(); k++)
 		{
 			objects.push_back(str[k]);
@@ -297,7 +300,7 @@ int main(int argc, char **argv)
 		int p = 0;
 		for(unsigned int k=0; k<sample.size(); k++)
 		{
-	
+
 			int rip = 0;
 			Marker = new PhaseSpace();
 			Marker->GetInfo(soggetto, task, time_start, time_stop);
@@ -330,19 +333,19 @@ int main(int argc, char **argv)
 				std::cin.get();
 				// std::thread thrKinectPCD(kinectPCDpointcloud, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
 				sleep(time_start);
-				Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));		
+				Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));
 				std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
 				thrGetData.join();
 				// thrKinectPCD.join();
-				
-			    Marker->stop_PhaseSpace(); 
+
+			    Marker->stop_PhaseSpace();
 	            std::cout << "Vuoi ripetere la prova? (y = si) " << std::endl;
 				std::cin >> repeat;
 				std::cin.ignore(INT_MAX,'\n');
 
 			}
 
-	   		delete Marker;	  
+	   		delete Marker;
 		}
 
 		std::cout << "Prova terminata " << std::endl;
