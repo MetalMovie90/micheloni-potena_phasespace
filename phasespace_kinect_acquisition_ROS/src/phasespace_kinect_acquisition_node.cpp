@@ -1,10 +1,10 @@
-// Autori del codice
-/*
+/* Autori del codice
 
    Ciro Potena, Hamal Marino, Carlos Rosales, Alessio Micheloni
 
+   (last edited by Alessio Micheloni 16/10/2014)
 */
-//
+
 
 // ROS headers
 #include <ros/ros.h>
@@ -168,108 +168,191 @@ int main(int argc, char **argv)
 	char oggetto[20];
 	std::vector<char*> objects;
 	
-	/*char str[40][20] = {"mela","martello","banana_spazzola","dado","palla_tennis"
-		               ,"lampadina","boccale_birra","coperchio_pentola","bottiglia_vetro","teiera",
-		                "sigaretta","smartphone","pc_portatile","tazza_the","gesso"
-		               ,"penna","carta_gioco","bottone","bicchiere_plastica","pettine",
-		                "forbici","cd-rom","cacciavite","pc_mouse","telecomando"
-		               ,"spillatrice","dizionario","cucchiaio","portafoglio","scodella",
-		                "cordless","chiave","spazzolino","scotch","uovo"
-		               ,"chiave_inglese","padella","accendino","fotocamera","videocassetta"};*/
+	char str[20][20] = {"teiera","coperchio_pentola","laptop","smartphone","carta","forbici",
+						"cd_rom","cacciavite","pc_mouse","spillatrice","cucchiaio","portafogli",
+						"scodella","chiave","spazzolino","uovo","chiave_inglese","padella",
+						"fotocamera","videocassetta"};
+
+	char str[20][20] = {};
 		               
-    char str[18][20] = {"dentifr_spazzol","pettin_capelli","abbott_camicia","chiud_cerniera","mettere_calze"
-		               ,"mettere_scarpe","bere","usare_cucchiaio","usare_colt_forc","versare_acqua",
-		                "scri_foglio","utilizz_forbici","chiave_serrat","utilizz_smphone","chiodi_martello"
-		               ,"pieg_asciug","aprire_lettera","mescolare"};
+    /*char str[10][20] = {"dentifricio_spazzolino","pettinare_capelli","mescolare_cucchiaio","coltello_forchetta",
+						"versare_acqua","scrivere_foglio","utilizzare_forbici","chiave_serratura","usare_smartphone",
+						"chiodo_martello"};*/
 
-    
+    int choice;
 
-    int n = (sizeof(str)/sizeof(*str));
-    std::vector<int> sample (n);
+    std::cout << "Come desideri effettuare l'acquisizione?" << std::endl;
+    std::cout << "1) Manualmente" << std::endl;
+	std::cout << "2) Seguendo lista preimpostata" << std::endl;
+	std::cout << "3) Esci" << std::endl;
+	std::cin >> choice;
 
-	std::cout << "Inserire il nome del soggetto: " << std::endl;
-	std::cin >> soggetto;
+	if(choice==1) {
+		std::cout << "Inserire il nome del soggetto: " << std::endl;
+		std::cin >> soggetto;
 	
-	std::cout << "Inserire il nome del task da eseguire: " << std::endl;
-	std::cin >> task;
+		std::cout << "Inserire il nome del task da eseguire: " << std::endl;
+		std::cin >> task;
 
-    std::string a = "mkdir ";
-    std::string c,d; 
-    c.assign(soggetto);
-    d.assign(task);
-    a = a + c + d;
+    	std::string a = "mkdir ";
+    	std::string c,d; 
+    	c.assign(soggetto);
+    	d.assign(task);
+    	a = a + c + d;
 
-    system(a.c_str());
+    	system(a.c_str());
 
-
-	std::cout << "Inserire il tempo per il bip iniziale e per quello finale " << std::endl;
-	// std::cout << "(Il tempo iniziale deve essere di almeno 3 secondi per permettere una corretta inizializzazione della kinect) " << std::endl;
-	std::cin >> time_start;
-	std::cin >> time_stop;
-	std::cin.ignore(INT_MAX,'\n');
+    	std::cout << "Inserire il tempo per il bip iniziale e per quello finale " << std::endl;
+		// std::cout << "(Il tempo iniziale deve essere di almeno 3 secondi per permettere una corretta inizializzazione della kinect) " << std::endl;
+		std::cin >> time_start;
+		std::cin >> time_stop;
+		std::cin.ignore(INT_MAX,'\n');
     
-	for(unsigned int k=0; k<sample.size(); k++)
-	{
-		objects.push_back(str[k]);
-	}
+		int p = 0;
 
-
-	int p = 0;
-	for(unsigned int k=0; k<sample.size(); k++)
-	{
-	
-		int rip = 0;
-		Marker = new PhaseSpace();
-		Marker->GetInfo(soggetto, task, time_start, time_stop);
-
-		srand (time(0));
-		p = rand() % objects.size();
-
-		while(sample.at(p) == 1)
+		char cont = 'y';
+		while(cont=='y')
 		{
-      	   p = (p+1) % objects.size();
-		}
-	    char repeat = 'y';
-		while(repeat=='y')
-		{
-			// create subject/trial specific directory
-			std::string b = "/";
-		    std::string a = "mkdir ";
-		    std::string c,d,e;
-		    c.assign(Marker->Subject);
-		    d.assign(objects.at(p));
-		    e.assign(Marker->Task);
-		    a = a + c + e + b + d + b;
-		    system(a.c_str());
+			std::cout << "Inserire il nome dell'oggetto: " << std::endl;
+			std::cin >> oggetto;
 
-            Marker->read = 1;
-			sample.at(p) = 1;
-			std::cout << "E' stato selezionato l'oggetto " << objects.at(p) << ", numero " << k + 1 << " di " << n  << std::endl;
-			std::cout << "Premere un tasto per iniziare la prova" << std::endl;
-			rip++;
-			std::cin.get();
-			// std::thread thrKinectPCD(kinectPCDpointcloud, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
-			sleep(time_start);
-			Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));		
-			std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
-			thrGetData.join();
-			// thrKinectPCD.join();
-			
-		    Marker->stop_PhaseSpace(); 
-            std::cout << "Vuoi ripetere la prova? (y si) " << std::endl;
-			std::cin >> repeat;
-			std::cin.ignore(INT_MAX,'\n');
+			int rip = 0;
+			Marker = new PhaseSpace();
+			Marker->GetInfo(soggetto, task, time_start, time_stop);
 
+			char repeat = 'y';
+			while(repeat=='y')
+			{
+				// create subject/trial specific directory
+				std::string b = "/";
+		    	std::string a = "mkdir ";
+		    	std::string c,d,e;
+			    c.assign(Marker->Subject);
+			    d.assign(oggetto);
+			    e.assign(Marker->Task);
+			    a = a + c + e + b + d + b;
+			    system(a.c_str());
+
+	            Marker->read = 1;
+				std::cout << "Premere un tasto per iniziare la prova" << std::endl;
+				rip++;
+				std::cin.get();
+				// std::thread thrKinectPCD(kinectPCDpointcloud, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
+				sleep(time_start);
+				Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));		
+				std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(oggetto), std::ref(rip));
+				thrGetData.join();
+				// thrKinectPCD.join();
+				
+			    Marker->stop_PhaseSpace(); 
+	            std::cout << "Vuoi ripetere la prova? (y = si) " << std::endl;
+				std::cin >> repeat;
+				std::cin.ignore(INT_MAX,'\n');
+
+			}
+
+			std::cout << "Vuoi continuare con le acquisizioni? (y = si) " << std::endl;
+			std::cin >> cont;
+
+	   		delete Marker;	  
 		}
 
-	   delete Marker;
-	  
+		std::cout << "Prova terminata " << std::endl;
+		std::cout << "Premere un tasto per terminare" << std::endl;
+		std::cin.get();
+		std::cin.get();
+
+		return 0;
 	}
+    else if(choice==2) {
+    	int n = (sizeof(str)/sizeof(*str));
+    	std::vector<int> sample (n);
 
-	std::cout << "Prova terminata " << std::endl;
-	std::cout << "Premere un tasto per terminare" << std::endl;
-	std::cin.get();
-	std::cin.get();
+		std::cout << "Inserire il nome del soggetto: " << std::endl;
+		std::cin >> soggetto;
+	
+		std::cout << "Inserire il nome del task da eseguire: " << std::endl;
+		std::cin >> task;
 
-	return 0;
+    	std::string a = "mkdir ";
+    	std::string c,d; 
+    	c.assign(soggetto);
+    	d.assign(task);
+    	a = a + c + d;
+
+    	system(a.c_str());
+
+    	std::cout << "Inserire il tempo per il bip iniziale e per quello finale " << std::endl;
+		// std::cout << "(Il tempo iniziale deve essere di almeno 3 secondi per permettere una corretta inizializzazione della kinect) " << std::endl;
+		std::cin >> time_start;
+		std::cin >> time_stop;
+		std::cin.ignore(INT_MAX,'\n');
+    
+		for(unsigned int k=0; k<sample.size(); k++)
+		{
+			objects.push_back(str[k]);
+		}
+
+
+		int p = 0;
+		for(unsigned int k=0; k<sample.size(); k++)
+		{
+	
+			int rip = 0;
+			Marker = new PhaseSpace();
+			Marker->GetInfo(soggetto, task, time_start, time_stop);
+
+			srand (time(0));
+			p = rand() % objects.size();
+
+			while(sample.at(p) == 1)
+			{
+      	   		p = (p+1) % objects.size();
+			}
+	    	char repeat = 'y';
+			while(repeat=='y')
+			{
+				// create subject/trial specific directory
+				std::string b = "/";
+		    	std::string a = "mkdir ";
+		    	std::string c,d,e;
+			    c.assign(Marker->Subject);
+			    d.assign(objects.at(p));
+			    e.assign(Marker->Task);
+			    a = a + c + e + b + d + b;
+			    system(a.c_str());
+
+	            Marker->read = 1;
+				sample.at(p) = 1;
+				std::cout << "E' stato selezionato l'oggetto " << objects.at(p) << ", numero " << k + 1 << " di " << n  << std::endl;
+				std::cout << "Premere un tasto per iniziare la prova" << std::endl;
+				rip++;
+				std::cin.get();
+				// std::thread thrKinectPCD(kinectPCDpointcloud, std::ref(Marker), std::ref(nh), std::ref(objects.at(p)),rip);
+				sleep(time_start);
+				Marker->init_PhaseSpace(INIT_FLAGS, MARKER_COUNT,std::string("192.168.1.230"));		
+				std::thread thrGetData(PSGetData, std::ref(Marker), std::ref(objects.at(p)), std::ref(rip));
+				thrGetData.join();
+				// thrKinectPCD.join();
+				
+			    Marker->stop_PhaseSpace(); 
+	            std::cout << "Vuoi ripetere la prova? (y = si) " << std::endl;
+				std::cin >> repeat;
+				std::cin.ignore(INT_MAX,'\n');
+
+			}
+
+	   		delete Marker;	  
+		}
+
+		std::cout << "Prova terminata " << std::endl;
+		std::cout << "Premere un tasto per terminare" << std::endl;
+		std::cin.get();
+		std::cin.get();
+
+		return 0;
+   	 }
+   	 else if(choice==3) {
+   	 	return 0;
+   	 }
 }

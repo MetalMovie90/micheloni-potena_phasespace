@@ -1,10 +1,10 @@
-// Autori del codice
-/*
+/* Autori del codice
 
    Ciro Potena, Hamal Marino, Carlos Rosales, Alessio Micheloni
 
+   (last edited by Alessio Micheloni 16/10/2014)
 */
-//
+
 
 #include <iostream>
 #include <time.h>
@@ -178,13 +178,22 @@ void GetData(char* oggetto, int rip){
 		strcat(filename_end, extension);
 		strcat(folder_tot,filename_end);
 
-std::cout << folder_tot << std::endl; 
+		std::cout << folder_tot << std::endl; 
 
-		Marker = fopen( folder_tot ,"w");
-	
+		Marker = fopen(folder_tot ,"w");
+			
         int n_marker;
+        double marker_id[72];
+        double marker_frames[72];
         int num = 0;
+        double sum = 0;
+        double frames_tot = 0;
+        double mean;
         int err;
+
+        for(int i = 0; i < 72; i++) {
+        	marker_frames[i] = 0;
+        }
 
         while(  owlGetMarkers(markers, 72) == 0  );
 
@@ -197,28 +206,32 @@ std::cout << folder_tot << std::endl;
 
 		while(t < init_t + boost::posix_time::seconds(T_stop-T_start) )
 		{
-            t+=inc;
+            frames_tot++;
+            t += inc;
 		    //std::cout << float( clock() - begin_time )/CLOCKS_PER_SEC << " begin_time: " << begin_time << " T_stop: " << T_stop << " clock: " << clock() << std::endl;
             n_marker = owlGetMarkers(markers, 72);
             if((err = owlGetError()) != OWL_NO_ERROR)
     		{
-				std::cout << "Errore Owl"<<std::endl;
+				std::cout << "Errore Owl" <<std::endl;
 				return;
 			}
 
             if(n_marker>0)
             {
-        	num=0;
-				for(int i = 0; i < n_marker; i++)
+        		num = 0;
+        		for(int i = 0; i < n_marker; i++)
 				{
-					if(markers[i].cond > 0)
+					if(markers[i].cond > 0) // -1 if marker[i] not captured
 					{
 						fprintf(Marker, "%d %f %f %f %f \n",i,markers[i].cond,markers[i].x, markers[i].y, markers[i].z);
+						marker_id[i] = i;
+						marker_frames[i]++; 
 						num++;
 					}
 				}
 				td = t-init_t;
         		fprintf(Marker, "%f %d 0 0 0\n\n", (double)td.seconds() + td.fractional_seconds()/1000000.0, num);
+        		sum += num;
 	    	}
 	    	td = t - boost::posix_time::microsec_clock::universal_time();
 	    	if(!(td.fractional_seconds()<0))
@@ -226,14 +239,26 @@ std::cout << folder_tot << std::endl;
 	    		usleep(td.fractional_seconds());
 	    	}
 		}
-		read = 0; 
-		std::cout << "\a" << std::endl;
+
+		mean = sum / frames_tot;
+
+		read = 0;
+
+		double percent[72];
+		
+		for(int i = 0; i < 72; i++) {
+			if(marker_id[i] != 0) {
+
+				percent[i] = marker_frames[i] / frames_tot * 100;
+				std::cout << "Marker " << marker_id[i] << " visto nel " << percent[i];
+				std::cout << " percento dei frames." << std::endl;
+			}
+		}
+
+		std::cout << "Numero medio di marker visti: " << mean << std::endl;
 		fclose(Marker);
 		delete filename_end;
 		delete folder_tot;
-		
-
-
 };
 
 void init_PhaseSpace(int INIT_FLAGS, int MARKER_COUNT,std::string IP_string){
