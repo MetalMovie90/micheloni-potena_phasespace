@@ -2,7 +2,7 @@
 
    Ciro Potena, Hamal Marino, Carlos Rosales, Alessio Micheloni
 
-   (last edited by Alessio Micheloni 16/10/2014)
+   (last edited by Alessio Micheloni 28/10/2014)
 */
 
 
@@ -151,10 +151,6 @@ void kinectPCDpointcloud(PhaseSpace* PS, ros::NodeHandle nh_, char* oggetto, int
     return;
 }
 
-
-
-
-
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "phasespace_kinect_acquisition_node");
@@ -168,19 +164,21 @@ int main(int argc, char **argv)
 	char oggetto[20];
 	std::vector<char*> objects;
 
-	char str[20][20] = {"teiera","coperchio_pentola","laptop","smartphone","carta","forbici",
-						"cd_rom","cacciavite","pc_mouse","spillatrice","cucchiaio","portafogli",
-						"scodella","chiave","spazzolino","uovo","chiave_inglese","padella",
-						"fotocamera","videocassetta"};
+	// TODO: allow the user to choose the experiment without changing the code every time	
+	char experiment[30][30] = {"Teiera","Coperchio_Pentola","Laptop","Smartphone","Carta","Forbici",
+						"Cd_Rom","Cacciavite","Pc_Mouse","Spillatrice","Cucchiaio","Portafogli",
+						"Scodella","Chiave","Spazzolino","Uovo","Chiave_Inglese","Padella",
+						"Fotocamera","Videocassetta","Mela","Martello","Banana","Dado","Palla_Tennis",
+						"Bottiglia_Vetro","Boccale_Birra","Lampadina","Accendino","Tazza_The"};
 
-	/*char str[20][20] = {"mela","martello","banana","dado","palla_tennis","bottiglia_vetro",
-						"boccale_birra","lampadina","gesso","tazza_the","sigaretta","penna",
-						"bottone","bicchiere_plastica","spazzola","telecomando","dizionrio","cordless",
-						"nastro_adesivo","accendino"};*/
+	/*char experiment[20][30] = {"Mela","Martello","Banana","Dado","Palla_Tennis","Bottiglia_Vetro",
+						"Boccale_Birra","Lampadina","Gesso","Tazza_The","Sigaretta","Penna",
+						"Bottone","Bicchiere_Plastica","Spazzola","Telecomando","Dizionario","Cordless",
+						"Nastro_Adesivo","Accendino"};*/
 
-    /*char str[10][20] = {"dentifricio_spazzolino","pettinare_capelli","mescolare_cucchiaio","coltello_forchetta",
-						"versare_acqua","scrivere_foglio","utilizzare_forbici","chiave_serratura","usare_smartphone",
-						"chiodo_martello"};*/
+    /*char experiment[10][30] = {"Dentifricio_Spazzolino","Pettinare_Capelli","Mescolare_Cucchiaio","Coltello_Forchetta",
+						"Versare_Acqua","Scrivere_Foglio","Utilizzare_Forbici","Chiave_Serratura","Usare_Smartphone",
+						"Chiodo_Martello"};*/
 
     int choice;
 
@@ -194,7 +192,7 @@ int main(int argc, char **argv)
 		std::cout << "Inserire il nome del soggetto: " << std::endl;
 		std::cin >> soggetto;
 
-		std::cout << "Inserire il nome del task da eseguire: " << std::endl;
+		std::cout << "Inserire il nome del task: " << std::endl;
 		std::cin >> task;
 
     	std::string a = "mkdir ";
@@ -226,7 +224,7 @@ int main(int argc, char **argv)
 			char repeat = 'y';
 			while(repeat=='y')
 			{
-				// create subject/trial specific directory
+				// create subject/trial specific directory (TODO: save all captured data in a specified directory)
 				std::string b = "/";
 		    	std::string a = "mkdir ";
 		    	std::string c,d,e;
@@ -268,13 +266,10 @@ int main(int argc, char **argv)
 		return 0;
 	}
     else if(choice==2) {
-    	int n = (sizeof(str)/sizeof(*str));
-    	std::vector<int> sample (n);
-
-		std::cout << "Inserire il nome del soggetto: " << std::endl;
+    	std::cout << "Inserire il nome del soggetto: " << std::endl;
 		std::cin >> soggetto;
 
-		std::cout << "Inserire il nome del task da eseguire: " << std::endl;
+		std::cout << "Inserire il nome dell'esperimento: " << std::endl;
 		std::cin >> task;
 
     	std::string a = "mkdir ";
@@ -291,11 +286,12 @@ int main(int argc, char **argv)
 		std::cin >> time_stop;
 		std::cin.ignore(INT_MAX,'\n');
 
-		for(unsigned int k=0; k<sample.size(); k++)
-		{
-			objects.push_back(str[k]);
-		}
+		int n = (sizeof(experiment)/sizeof(*experiment));
+    	std::vector<int> sample (n);
 
+    	for(unsigned int k=0; k<sample.size(); k++) {
+			objects.push_back(experiment[k]);
+		}
 
 		int p = 0;
 		for(unsigned int k=0; k<sample.size(); k++)
@@ -315,7 +311,7 @@ int main(int argc, char **argv)
 	    	char repeat = 'y';
 			while(repeat=='y')
 			{
-				// create subject/trial specific directory
+				// create subject/trial specific directory (TODO: save all captured data in a specified directory)
 				std::string b = "/";
 		    	std::string a = "mkdir ";
 		    	std::string c,d,e;

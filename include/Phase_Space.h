@@ -2,7 +2,7 @@
 
    Ciro Potena, Hamal Marino, Carlos Rosales, Alessio Micheloni
 
-   (last edited by Alessio Micheloni 16/10/2014)
+   (last edited by Alessio Micheloni 28/10/2014)
 */
 
 
@@ -174,6 +174,7 @@ void GetData(char* oggetto, int rip){
 	    strcat(filename_end, oggetto);
 		repeat = 0;
         sprintf(ripc,"%d",rip);
+        strcat(filename_end,"_");
 		strcat(filename_end, ripc);
 		strcat(filename_end, extension);
 		strcat(folder_tot,filename_end);
